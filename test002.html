@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test002</title>
+    <script>
+        /**
+         * 消息通道强制设置为长链接方式，默认为web socket->xhr-polling层层降级方式.设置方式为window.WEB_XHR_POLLING=true;
+         * WebSDK2.0 默认支持自动降级，也可以自动设置连接方式。
+         * @example
+         * 在引入RongIMLib.js之前加入如下代码：
+         */
+        window["WEB_XHR_POLLING"] = true
+    </script>
+    <script src="https://cdn.bootcss.com/jquery/3.1.0/jquery.min.js"></script>
+    <script src="http://cdn.ronghub.com/RongIMLib-2.3.1.min.js"></script>
+</head>
+<body>
+
+<button id="test002">给test001发信息</button>
+<div id="uslist">
+
+</div>
+<script>
+    $("#test002").click(function () {
+        sendInfo("test001");
+    })
+    var WEB_XHR_POLLING = true;
+    /**
+     * 初始化 SDK，在整个应用全局只需要调用一次。
+     * @param  {string} appKey  开发者后台申请的 AppKey，用来标识应用
+     */
+    RongIMClient.init("pkfcgjstpo3l8");
+    //注意此ID 必须和token对应
+    //关于token怎么生成 请查看我的微博记录
+    //d2相当于 我传给融云一个标识  他给我反应 对应这个标记的 token
+    var userId = "test002";
+    var token = "TX4AOjPW4jUPBlLgxCJH9EqquKa4qjBc6PU2KRSDiR6qSNOGFvpqcp/eJe0hwbcWt4dspFvFhfJgSfVyRA35ndpRoabiwxoJ";
+
+    // 连接融云服务器。
+    RongIMClient.connect(token, {
+        onSuccess: function (userId) {
+            console.log("Login successfully." + userId);
+        },
+        onTokenIncorrect: function () {
+            console.log('token无效');
+        },
+        onError: function (errorCode) {
+            var info = '';
+            switch (errorCode) {
+                case RongIMLib.ErrorCode.TIMEOUT:
+                    info = '超时';
+                    break;
+                case RongIMLib.ErrorCode.UNKNOWN_ERROR:
+                    info = '未知错误';
+                    break;
+                case RongIMLib.ErrorCode.UNACCEPTABLE_PaROTOCOL_VERSION:
+                    info = '不可接受的协议版本';
+                    break;
+                case RongIMLib.ErrorCode.IDENTIFIER_REJECTED:
+                    info = 'appkey不正确';
+                    break;
+                case RongIMLib.ErrorCode.SERVER_UNAVAILABLE:
+                    info = '服务器不可用';
+                    break;
+            }
+            alert(errorCode);
+        }
+    });
+    // 设置连接监听状态 （ status 标识当前连接状态 ）// 连接状态监听器
+    RongIMClient.setConnectionStatusListener({
+        onChanged: function (status) {
+            switch (status) {
+                case RongIMLib.ConnectionStatus.CONNECTED:
+                    console.log('链接成功');
+                    break;
+                case RongIMLib.ConnectionStatus.CONNECTING:
+                    console.log('正在链接');
+                    break;
+                case RongIMLib.ConnectionStatus.DISCONNECTED:
+                    console.log('断开连接');
+                    break;
+                case RongIMLib.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT:
+                    console.log('其他设备登陆');
+                    break;
+                case RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE:
+                    console.log('网络不可用');
+                    break;
+            }
+        }
+    });
+
+    function openInfo(obj) {
+        alert(JSON.stringify(obj))
+
+    }
+
+
+    // 消息监听器
+    RongIMClient.setOnReceiveMessageListener({
+        // 接收到的消息
+        onReceived: function (message) {
+            // 判断消息类型
+            switch (message.messageType) {
+                case RongIMClient.MessageType.TextMessage:
+                    // 发送的消息内容将会被打印
+                    console.log(message.content.content);
+                    //                    var id = message.content.senderUserId.substring(1);
+                    var id = "test001";
+                    var obj = loadUsInfo(id);
+                    obj={};
+                    obj.id = 'test001';
+                    obj.realname = "realname";
+                    var wrap = $("<div></div>")
+                    var htm1 = "<span>" + obj.realname + "</span>";
+                    var htm2 = "<button onclick=\"openInfo(" + message.content
+                        + ")\">查看</button>";
+                    var htm3 = $("<button>回复</button>");
+                    htm3.click(function () {
+                        sendInfo(obj.id);
+                    })
+                    wrap.append(htm1);
+                    wrap.append(htm2);
+                    wrap.append(htm3);
+                    $("#uslist").append(wrap);
+                    break;
+                case RongIMClient.MessageType.VoiceMessage:
+                    // 对声音进行预加载
+                    // message.content.content 格式为 AMR 格式的 base64 码
+                    RongIMLib.RongIMVoice.preLoaded(message.content.content);
+                    break;
+                case RongIMClient.MessageType.ImageMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.DiscussionNotificationMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.LocationMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.RichContentMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.DiscussionNotificationMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.InformationNotificationMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.ContactNotificationMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.ProfileNotificationMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.CommandNotificationMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.CommandMessage:
+                    // do something...
+                    break;
+                case RongIMClient.MessageType.UnknownMessage:
+                    // do something...
+                    break;
+                default:
+                // 自定义消息
+                // do something...
+            }
+        }
+    });
+
+
+
+    //发送数据   次数ID标识 就相当于  你传给融云的那个标识
+    function sendInfo(id) {
+        var msg = new RongIMLib.TextMessage({
+            content: "hello" + id,
+            extra: "附加信息" + id
+        });
+        //或者使用RongIMLib.TextMessage.obtain 方法.具体使用请参见文档
+        //var msg = RongIMLib.TextMessage.obtain("hello");
+        var conversationtype = RongIMLib.ConversationType.PRIVATE; // 私聊
+        var targetId = id; // 目标 Id  注意"p" + id;的值 必须是已经传给我融云 并且生成了token的
+        RongIMClient.getInstance().sendMessage(conversationtype, targetId, msg, {
+            // 发送消息成功
+            onSuccess: function (message) {
+                //message 为发送的消息对象并且包含服务器返回的消息唯一Id和发送消息时间戳
+                console.log("Send successfully");
+            },
+            onError: function (errorCode, message) {
+                var info = '';
+                switch (errorCode) {
+                    case RongIMLib.ErrorCode.TIMEOUT:
+                        info = '超时';
+                        break;
+                    case RongIMLib.ErrorCode.UNKNOWN_ERROR:
+                        info = '未知错误';
+                        break;
+                    case RongIMLib.ErrorCode.REJECTED_BY_BLACKLIST:
+                        info = '在黑名单中，无法向对方发送消息';
+                        break;
+                    case RongIMLib.ErrorCode.NOT_IN_DISCUSSION:
+                        info = '不在讨论组中';
+                        break;
+                    case RongIMLib.ErrorCode.NOT_IN_GROUP:
+                        info = '不在群组中';
+                        break;
+                    case RongIMLib.ErrorCode.NOT_IN_CHATROOM:
+                        info = '不在聊天室中';
+                        break;
+                    default:
+                        info = x;
+                        break;
+                }
+                console.log('发送失败:' + info);
+            }
+        });
+    }
+
+
+    //此函数有问题，需要处理
+    function loadUsInfo(id) {
+        var obj = null;
+        $.ajax({
+            type: "POST",
+            url: "",
+            data: {
+                "id": id
+            },
+            dataType: "json",
+            success: function (data) {
+                if (data.status == "success") {
+                    obj = data.result;
+                } else {
+                    alert("网络错误");
+                }
+            }
+        });
+        return obj;
+    }
+</script>
+</body>
+</html>
